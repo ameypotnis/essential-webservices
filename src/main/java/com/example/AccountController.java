@@ -4,6 +4,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -70,6 +73,8 @@ public class AccountController {
     }
 }
 
+@XmlRootElement
+@XmlAccessorType(XmlAccessType.PUBLIC_MEMBER)
 class Account implements Serializable {
     Integer accountNumber;
     BigDecimal amount;
