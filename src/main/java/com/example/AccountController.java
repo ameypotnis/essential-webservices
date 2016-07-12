@@ -1,8 +1,11 @@
 package com.example;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -39,11 +42,15 @@ public class AccountController {
     @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public Account create(@RequestBody Account account) {
+    public ResponseEntity<Account> create(@RequestBody Account account) {
         Preconditions.checkNotNull(account.amount, "Amount");
         account.accountNumber = idGenerator.getAndIncrement();
         db.add(account);
-        return account;
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setLocation(ServletUriComponentsBuilder
+                .fromCurrentRequest().path("/{accountNumber}")
+                .buildAndExpand(account.accountNumber).toUri());
+        return new ResponseEntity<Account>(account, httpHeaders, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/{accountNumber}", method = RequestMethod.PUT)
