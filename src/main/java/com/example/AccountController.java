@@ -4,18 +4,24 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import static java.lang.Integer.min;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Created by amey on 7/7/16.
@@ -29,7 +35,11 @@ public class AccountController {
 
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
-    public List<Account> findAll() {
+    public List<Account> findAll(HttpServletRequest request) {
+        String page = request.getParameter("p");
+        if (!StringUtils.isEmpty(page)) {
+            return partition(db, 2).get(Integer.parseInt(page));
+        }
         return db;
     }
 
@@ -77,6 +87,13 @@ public class AccountController {
                 .filter(account -> account.accountNumber.equals(accountNumber))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private static Map<Integer, List<Account>> partition(List<Account> list, int pageSize) {
+        return Stream.iterate(0, i -> i + pageSize)
+                .limit((list.size() + pageSize - 1) / pageSize)
+                .collect(toMap(i -> i / pageSize,
+                        i -> list.subList(i, min(i + pageSize, list.size()))));
     }
 }
 
